@@ -34,57 +34,59 @@ information being compromised, systems being shut down, or personal privacy
 being violated through unauthorized access. To combat these threats and ensure a
 safe operation of communication networks, it is necessary to detect and address
 attacks on networks and the sensitive information they carry as early as
-possible. Effective counter strategies require a deep understanding of attack
-procedures and the design of robust defense mechanisms. 
+possible. 
 
 In this context, the proposed IDP focuses on the collection and analysis of
-network traffic. The gained insights should then be utilized to detect malicious
-behavior. As a first step, an environment shall be implemented where known
-attacks can be carried out in a secure and observable manner. As a second step,
-methods for identifying traffic patterns of different attacks shall be
-evaluated. Here, we want to study malware spread in a small part of the campus
-network using central monitoring. The acquired traffic data are aggregated in a
-\textit{traffic dispersion graph} (TDG) which will be used to train so-called
-\textbf{Stochastic Block Models} (SBMs) which can detect and explain specific
-forms of attacks.
+network traffic caused by malware spread in a campus network. The gained
+insights can then be facilitated to detect such malicious behavior. As a first
+step, an environment shall be implemented where attacks can be carried out in a
+secure and observable manner. As a second step, methods for identifying traffic
+patterns of different malicious attacks shall be evaluated for the collected
+data. Effective counter strategies require a deep understanding of attack
+procedures and the design of robust defense mechanisms. Thus, we will perform an
+explorative data analysis to gain a general understanding of suspicious network
+traffic. In particular, we want to evaluate \textbf{Stochastic Block Models}
+(SBMs) as a possible detection model.
 
 \section{Relation to Application Area Electrical and Computer Engineering}
 Resilient network design and planning are one of the main research topics at the
 Chair of Communication Systems (LKN) in the Department of Electrical and
 Computer Engineering. As the volume and complexity of network traffic continues
 to grow, characterizing network behavior becomes more and more difficult. This
-presents a challenge for network management, which heavily relies on manual
-identification of network dynamics and decision-making. The goal of this project
-is to evaluate an anomaly detector using ML models, a popular tool in computer
-science research. The finding of this IDP might help to overcome these
-limitations and lead towards networks capable of understanding themselves and
-react to threats autonomously, in turn unburden network operators.
+presents a challenge for network management, which currently heavily relies on
+manual identification of network dynamics and decision-making. The compiled
+dataset of this IDP might help to overcome these limitations and lead
+towards networks capable of understanding themselves and react to threats
+autonomously, in turn supporting network operators.
 
 \section{Choice of Lecture}
 As communication networks form the integral part of this IDP, the lecture
 ``Communication Networks'' given by Prof. Kellerer teaches their foundations and
-functioning from an Electrical and Computer Engineering point of view. In
-particular will the proposed model analyze the network as a graph which is also
-used in the lecture to assess routing algorithms as well as network planing and
-management.  
+functioning from an Electrical and Computer Engineering point of view. Key
+concepts use the network's graph representation to assess routing algorithms as
+well as network planing and management. This is helpful for the investigation as
+SBMs are a form of generative graph algorithms.
 
 \section{Milestones}
 \begin{enumerate}
-    \item Research on common attack patterns and detection/mitigation procedures
     \item Set up test environment for controlled attacks and design attack
     scenarios
     \item Design and implement architecture for collecting ground-truth data
     during attacks
-    \item Evaluate how SBMs help detecting attack patterns in an explorative
-    data analysis
+    \begin{enumerate}
+        \item[2.5.] Create corresponding dataset
+    \end{enumerate}
+    \item Explorative data analysis and evaluate how SBMs help detecting attack
+    patterns
 \end{enumerate}
 
 \section{Timeline}
-The first 2 weeks of the project are scheduled for research described in M1.
-This will be followed by the main part of the IDP, the planning and
-implementation of the attack environment and data collection architecture (M2 \&
-3). This part is expected to take 12-18 weeks. 2-4 weeks will be assigned to the
-data analysis and SBM evaluation (M4). The remaining time of the project will be
-spent for evaluation, documentation, and preparation of the presentation.
+The first 2 weeks of the project are scheduled for research in common attack
+patterns and their mitigation. This will be followed by the main part of the
+IDP, the planning and implementation of the attack environment and data
+collection architecture (M1, 2). This part is expected to take 12-14 weeks.
+4-6 weeks will be assigned to the data analysis and SBM evaluation (M3). The
+remaining time of the project will be spent for evaluation, documentation, and
+preparation of the presentation.
 
 \end{document}
