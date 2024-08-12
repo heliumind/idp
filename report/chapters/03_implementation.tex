@@ -1,0 +1,31 @@
+\chapter{Implementation}\label{chapter:implementation}
+
+% Overview of the steps to be taken
+
+\section{Existing Data Visualizing Service}
+
+The existing service detailed in \cite{nowak2024pvw} provides a web-based
+framework for sharing and visualizing research data. The visualization
+functionality leverages Kitware's ParaViewWeb Framework for browser-based remote
+rendering. The ParaView-like web application allows users to directly visualize
+simulation results interactively in their web browser without the need to
+download large datasets. The service is realized on a LRZ Compute Cloud (CC)
+instance serving ParaView Visualizer and an Apache HTTP server functioning as a
+reverse proxy.
+
+It seemingly integrates with LRZ's Data-Science-Storage (DSS) as it is connected
+to the CC instance via an NFS mount. Users can share specific folders from
+their personal DSS directory with external researchers who do not have direct
+access to the LRZ. This is achieved through unique access links, similar to
+file-sharing services like Google Drive or Dropbox.
+
+\subsection{Fixing ParaView glibc Issue}
+
+\subsection{Reorganizing different Tech Stacks on Apache HTTP Server}
+
+\section{Creating a New User Portal}
+
+\subsection{Adding Logging}
+
+\section{Installing and Configuring Shibboleth SP}\label{section:shibboleth}
+

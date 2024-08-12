@@ -1,0 +1,54 @@
+\RequirePackage[l2tabu,orthodox]{nag}
+
+% TODO: decide if one-sided/two-sided
+% \documentclass[headsepline,footsepline,footinclude=false,fontsize=11pt,paper=a4,listof=totoc,bibliography=totoc,BCOR=12mm,DIV=12]{scrbook} % two-sided
+\documentclass[headsepline,footsepline,footinclude=false,oneside,fontsize=11pt,paper=a4,listof=totoc,bibliography=totoc]{scrbook} % one-sided
+
+% TODO: change citation style in settings
+\input{settings}
+
+% TODO: change thesis information
+\newcommand*{\getUniversity}{Technische Universität München}
+\newcommand*{\getFaculty}{Informatics}
+\newcommand*{\getDegree}{Data Engineering and Analytics}
+\newcommand*{\getSchool}{Computation, Information and Technology}
+\newcommand*{\getTitle}{Enabling Access to Research Data via a Compute Cloud: A
+Case Study on Re-entry Flow Simulation Data}
+\newcommand*{\getAuthor}{Henry He}
+\newcommand*{\getDoctype}{Application Project}
+\newcommand*{\getSupervisor}{Apl. Prof. Dr.-Ing. habil. Christian Stemmer}
+\newcommand*{\getAdvisor}{Friedrich Ulrich, M.Sc.}
+\newcommand*{\getSubmissionDate}{\today}
+\newcommand*{\getSubmissionLocation}{Munich}
+
+\begin{document}
+
+% Set page numbering to avoid "destination with the same identifier has been already used" warning for cover page.
+% (see https://en.wikibooks.org/wiki/LaTeX/Hyperlinks#Problems_with_Links_and_Pages).
+\pagenumbering{alph}
+
+\frontmatter{}
+
+\input{pages/title}
+\input{pages/disclaimer}
+\microtypesetup{protrusion=false}
+\tableofcontents{}
+\microtypesetup{protrusion=true}
+
+\mainmatter{}
+
+\input{chapters/01_introduction}
+\input{chapters/02_methods}
+\input{chapters/03_implementation}
+\input{chapters/04_conclusion}
+
+\appendix{}
+\input{pages/appendix}
+
+\microtypesetup{protrusion=false}
+\listoffigures{}
+\listoftables{}
+\microtypesetup{protrusion=true}
+\printbibliography{}
+
+\end{document}
