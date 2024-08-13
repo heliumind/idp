@@ -68,3 +68,21 @@
   keywordstyle=\bfseries\color{TUMBlue},
   stringstyle=\color{TUMAccentGreen}
 }
+
+% Macro \lsteveryline{<tokens>} to prefix tokens to every line
+\makeatletter
+\def\lst@everyline{}
+\lst@AddToHook{EveryLine}{\lst@everyline}
+\newcommand\lsteveryline[1]{\renewcommand\lst@everyline{#1}}
+\makeatother
+
+\lstnewenvironment{terminal}[1][]{
+  \lstset{
+    basicstyle=\ttfamily,
+    language=bash,
+    breaklines=true,
+    frame={l},
+    #1
+  }%
+  \lsteveryline{\textcolor{gray}{\$ }}%
+}{}

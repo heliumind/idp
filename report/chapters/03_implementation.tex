@@ -13,13 +13,55 @@ download large datasets. The service is realized on a LRZ Compute Cloud (CC)
 instance serving ParaView Visualizer and an Apache HTTP server functioning as a
 reverse proxy.
 
-It seamlessly integrates with LRZ's Data-Science-Storage (DSS) as it is
+It seamlessly integrates with LRZ's Data Science Storage (DSS) as it is
 connected to the CC instance via an NFS mount. Users can share specific folders
 from their personal DSS directory with external researchers who do not have
 direct access to the LRZ. This is achieved through unique access links, similar
 to file-sharing services like Google Drive or Dropbox.
 
-\subsection{Fixing ParaView glibc Issue}
+\subsection{Fixing ParaView OSMesa and glibc Isse}
+
+In February Ubuntu 22.04 LTS upgraded its GNU C Library, commonly known as
+\textit{glibc}, to version 2.35. This broke the existing data visualization
+service as the used ParaView Server is incompatible with the upgraded
+\textit{glibc}. The underlying problem is the \textit{OSMesa} binary used by
+ParaView for software rendering and is further described in this GitLab
+Issue~\cite{kitwareOsmesaBinary}. Until this report's submission date there has
+not been a fix for thi issue.
+
+As proposed by the ParaView maintainers in~\cite{paraviewUsingUbuntu}
+workarounds for this bug are
+
+\begin{enumerate}
+    \item Using \textit{EGL} flavor of ParaView Server
+    \item Compiling ParaView with \textit{OSMesa} locally
+    \item Downgrading \textit{glibc}
+\end{enumerate}
+
+Option 1 requires a CC instance with a graphics card as the \textit{EGL} variant
+uses hardware rendering. However as currently the demand for GPUs is
+unquestionably high, they are no instances with GPU available. Option 2 is an
+involved task with software projects of considerable size as in the case of
+ParaView, making it also infeasible. Thus, we have decided on option 3 by
+setting up a new CC instance running on Ubuntu 20.04 LTS that comes with
+\textit{glibc} version 2.31 and installing the data visualization service again.
+This is because \textit{glibc} is a very common dependency and downgrading it in
+a live system would lead to further incompatibilities with other software.
+
+\subsubsection*{Instructions for the workaround}
+
+\begin{enumerate}
+    \item The custom binary \lstinline{pv-session-mapper} written in Rust has to
+    be compiled locally as \textit{glibc} is dynamically linked. 
+    \item Activate Apache Server module \lstinline{proxy_wstunnel} with 
+    \begin{terminal}
+    sudo a2enmod proxy_wstunnel
+    \end{terminal}
+    \item Restart Apache Server to load new configuration with
+    \begin{terminal}
+    sudo systemctl restart apache2
+    \end{terminal}
+\end{enumerate}
 
 \subsection{Reorganizing different Tech Stacks on Apache HTTP Server}
 
