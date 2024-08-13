@@ -32,7 +32,7 @@ jobs:
           # The working directory for the LaTeX engine
           working_directory: report
       - name: Upload pdf
-        uses: actions/upload-artifact@v2.1.4
+        uses: actions/upload-artifact@v4
         with:
           # Artifact name
           name: Report.pdf
