@@ -66,13 +66,14 @@
   columns=fullflexible,
   autogobble,
   keywordstyle=\bfseries\color{TUMBlue},
-  stringstyle=\color{TUMAccentGreen}
+  stringstyle=\color{TUMAccentGreen},
+  breaklines=true
 }
 
 % Macro \lsteveryline{<tokens>} to prefix tokens to every line
 \makeatletter
 \def\lst@everyline{}
-\lst@AddToHook{EveryLine}{\lst@everyline}
+\lst@AddToHook{EveryPar}{\lst@everyline}
 \newcommand\lsteveryline[1]{\renewcommand\lst@everyline{#1}}
 \makeatother
 
@@ -80,7 +81,6 @@
   \lstset{
     basicstyle=\ttfamily,
     language=bash,
-    breaklines=true,
     frame={l},
     #1
   }%
