@@ -83,12 +83,12 @@ compiled locally as \textit{glibc} is dynamically linked. This means at section
     \end{terminal}
     It will download a script, and start the installation. If everything went
     well \lstinline{Rust is installed now. Great!} should appear.
-    \item Change into source directory and compile locally with
+    \item Change into source directory and compile locally
     \begin{terminal}
         cd pv-session-mapper/session_mapper
         cargo build --release
     \end{terminal}
-    \item Create target directory, copy and adjust custom binary with
+    \item Create target directory, copy and adjust custom binary
     \begin{terminal}
         sudo mkdir /opt/pv-session-mapper
         sudo cp target/release/pv-session-mapper /opt/pv-session-mapper
@@ -111,7 +111,80 @@ be made
     \end{terminal}
 \end{enumerate}
 
-\subsection{Reorganizing different Tech Stacks on Apache HTTP Server}
+\subsection{Reorganizing Apache HTTP Server configuration}
+
+The existing data visualization service will need a publicly accessible landing
+page and a protected new user portal after SSO login via DFN-AAI was successful.
+It is best practice to separate the web app i.e. ParaView from the marketing
+site. Benefits are that non-technical staff can independently modify content of
+the landing page without possibly breaking the web app. One way to achieve a
+separation is with the help of subdomains. 
+
+In our design, the landing page will be reachable under
+\lstinline{marge.aer.ed.tum.de} whereas the service will be bound to the
+subdomain \lstinline{pvw.marge.aer.ed.tum.de}. In order to achieve this
+behavior, Apache's virtual host feature is leveraged, allowing different content
+to be served via one and the same Apache server, depending on the host name used
+in the request. ParaView continues to use its existing subdirectory whereas the
+landing page is served from a new subdirectory.
+
+This means the existing \lstinline{paraview-multi-user.conf} is to be moved from
+\lstinline{conf-available} to \lstinline{sites-available}, the usual place where
+virtual configurations are placed, slightly changed to account for the subdomain
+as seen in Listing~\ref{lst:002-pvw} and a new landing page configuration shown
+in Listing~\ref{lst:001-marge} is to be added. Note how \lstinline{ServerName}
+reflects how Apache resolves which virtual host to serve a given request.
+
+\subsubsection*{Instructions}
+
+\begin{enumerate}
+    \item Create a folder to serve files for landing page
+    \lstinline{marge.aer.ed.tum.de}
+    \begin{terminal}
+        sudo mkdir /var/www/html/marge
+    \end{terminal}
+    \item Change into configuration directory and copy both into apache
+    configuration
+    \begin{terminal}
+        cd apache-config/sites-available
+        sudo cp 001-marge.conf /etc/apache2/sites-available
+        sudo cp 002-pvw.conf /etc/apache2/sites-available
+    \end{terminal}
+    \item Deactivate old ParaView Apache configuration
+    \begin{terminal}
+        sudo a2disconf paraview-multi-project
+    \end{terminal}
+    At this point \lstinline{paraview-multi-project.conf} could be deleted as it
+    is no longer used
+    \item Finally activate new configuration and restart Apache server
+    \begin{terminal}
+        sudo a2ensite 001-marge
+        sudo a2ensite 002-pvw
+        sudo systemctl restart apache2
+    \end{terminal}
+\end{enumerate}
+
+\lstinputlisting[
+    float=htp,
+    numbers=left,
+    numberstyle=\small,
+    tabsize=2,
+    frame=single,
+    label={lst:001-marge},
+    caption={Apache configuration for Landing Page},
+    captionpos=b
+]{../apache-config/sites-available/001-marge.conf}
+
+\lstinputlisting[
+    float=htp,
+    numbers=left,
+    numberstyle=\small,
+    tabsize=2,
+    frame=single,
+    label={lst:002-pvw},
+    caption={Apache configuration for ParaView},
+    captionpos=b
+]{../apache-config/sites-available/002-pvw.conf}
 
 \section{Creating a New User Portal}
 
