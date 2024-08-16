@@ -4,11 +4,11 @@ This chapter contains detailed information on the rationale and how solutions
 are implemented. It also gives instructions on how to install them. It assumes
 the reader has ssh access to the server, sudo privileges, access to the source
 code and has cloned the code repository on the server as detailed in appendix
-~\ref{chapter:code}.
+\ref{chapter:code}.
 
-\section{Existing Data Visualizing Service}
+\section{Existing Data Visualization Service}
 
-The existing service, as detailed in \cite{nowak2024pvw}, provides a web-based
+The existing service, as detailed in~\cite{nowak2024pvw}, provides a web-based
 framework for sharing and visualizing research data. The visualization
 functionality leverages Kitware's ParaViewWeb Framework for browser-based remote
 rendering. The ParaView-like web application allows users to directly visualize
@@ -115,25 +115,70 @@ be made
 
 The existing data visualization service will need a publicly accessible landing
 page and a protected new user portal after SSO login via DFN-AAI was successful.
-It is best practice to separate the web app i.e. ParaView from the marketing
+It is best practice to separate the web app i.e. ParaViewWeb from the marketing
 site. Benefits are that non-technical staff can independently modify content of
 the landing page without possibly breaking the web app. One way to achieve a
 separation is with the help of subdomains. 
 
 In our design, the landing page will be reachable under
 \lstinline{marge.aer.ed.tum.de} whereas the service will be bound to the
-subdomain \lstinline{pvw.marge.aer.ed.tum.de}. In order to achieve this
-behavior, Apache's virtual host feature is leveraged, allowing different content
-to be served via one and the same Apache server, depending on the host name used
-in the request. ParaView continues to use its existing subdirectory whereas the
-landing page is served from a new subdirectory.
+subdomain \lstinline{pvw.marge.aer.ed.tum.de}. This setup also simplifies DNS
+configuration, the system responsible for translating human-readable names to
+actual routable IP-addresses, as only two records are needed. An A-Record for
+linking \lstinline{marge.aer.ed.tum.de} to the CC instance's floating IP-address
+as well as a wildcard DNS record linking \lstinline{*.marge.aer.ed.tum.de} to
+the same IP-address. The wildcard record will match for every subdomain, even
+not yet existing ones, making this setup suitable for future requirements. 
+
+In order to achieve aforementioned behavior, Apache's virtual host feature is
+leveraged, allowing different content to be served over the same Apache server,
+depending on the host name used in the request. ParaViewWeb continues to use its
+existing subdirectory whereas the landing page is served from a new
+subdirectory.
 
 This means the existing \lstinline{paraview-multi-user.conf} is to be moved from
 \lstinline{conf-available} to \lstinline{sites-available}, the usual place where
 virtual configurations are placed, slightly changed to account for the subdomain
 as seen in Listing~\ref{lst:002-pvw} and a new landing page configuration shown
-in Listing~\ref{lst:001-marge} is to be added. Note how \lstinline{ServerName}
-reflects how Apache resolves which virtual host to serve a given request.
+in Listing~\ref{lst:001-marge} is to be added. Note how Apache resolves which
+virtual host to serve with the help of the configured \lstinline{ServerName}.
+
+The new landing page configuration resembles a standard site configuration and
+is constructed in the following way:
+\begin{itemize}
+    \item Virtual host configurations are enclosed in a \lstinline{<VirtualHost>}
+    directive, meaning that everything nested within only applies to the defined
+    VirtualHost.
+    \item In line 2, \lstinline{ServerName} specifies under which name the
+    landing page is accessible.
+    \item \lstinline {DocumentRoot} in line 5 specifies which directory serves
+    the landing page's content.
+    \item \lstinline{ErrorLog} and \lstinline{CustomLog} define in which
+    location the virtual host's error and access logs are saved.
+    \lstinline{APACHE_LOG_DIR} is a provided variable and resolves to the
+    standard location \lstinline{/var/log/apache2}.
+    \item Lines 10-14 allow the Apache server to access the files provided in
+    line 5.
+\end{itemize}
+
+\lstinputlisting[
+    style=sourcecode,
+    float=htp,
+    label={lst:001-marge},
+    caption={\lstinline|001-marge.conf|: Apache configuration for Landing Page}
+]{../apache-config/sites-available/001-marge.conf}
+
+The changes made to ParaViewWeb's Apache configuration are minor and consist of
+enclosing the configuration in a \lstinline{<VirtualHost>} directive,  in line 2
+and specifying an own subdirectory \lstinline{/var/log/apache2/pvw} for storing
+the web app's Apache logs in line 12-13 to separate concerns.
+
+\lstinputlisting[
+    style=sourcecode,
+    float=htp,
+    label={lst:002-pvw},
+    caption={\lstinline{002-pvw.conf}: Apache configuration for ParaViewWeb}
+]{../apache-config/sites-available/002-pvw.conf}
 
 \subsubsection*{Instructions}
 
@@ -143,6 +188,23 @@ reflects how Apache resolves which virtual host to serve a given request.
     \begin{terminal}
         sudo mkdir /var/www/html/marge
     \end{terminal}
+    \item Create a folder to store ParaViewWeb's log files
+    \begin{terminal}
+        sudo mkdir /var/log/apache2/pvw
+    \end{terminal}
+    \item Adjust \lstinline{pv-configurator} settings to reflect ParaViewWeb
+    subdomain. Open and edit \lstinline{configurator_settings.json} with root
+    privileges
+    \begin{terminal}
+        sudo vim /srv/pv-configurator/configurator_settings.json
+    \end{terminal}
+    \item Make following change and save file
+    \begin{lstlisting}[frame=single]
+        {
+            "servername": "pvw.marge.aer.ed.tum.de",
+            ...
+        }
+    \end{lstlisting}
     \item Change into configuration directory and copy both into apache
     configuration
     \begin{terminal}
@@ -150,12 +212,12 @@ reflects how Apache resolves which virtual host to serve a given request.
         sudo cp 001-marge.conf /etc/apache2/sites-available
         sudo cp 002-pvw.conf /etc/apache2/sites-available
     \end{terminal}
-    \item Deactivate old ParaView Apache configuration
+    \item Deactivate old ParaViewWeb Apache configuration
     \begin{terminal}
         sudo a2disconf paraview-multi-project
     \end{terminal}
     At this point \lstinline{paraview-multi-project.conf} could be deleted as it
-    is no longer used
+    is no longer used.
     \item Finally activate new configuration and restart Apache server
     \begin{terminal}
         sudo a2ensite 001-marge
@@ -164,29 +226,9 @@ reflects how Apache resolves which virtual host to serve a given request.
     \end{terminal}
 \end{enumerate}
 
-\lstinputlisting[
-    float=htp,
-    numbers=left,
-    numberstyle=\small,
-    tabsize=2,
-    frame=single,
-    label={lst:001-marge},
-    caption={Apache configuration for Landing Page},
-    captionpos=b
-]{../apache-config/sites-available/001-marge.conf}
-
-\lstinputlisting[
-    float=htp,
-    numbers=left,
-    numberstyle=\small,
-    tabsize=2,
-    frame=single,
-    label={lst:002-pvw},
-    caption={Apache configuration for ParaView},
-    captionpos=b
-]{../apache-config/sites-available/002-pvw.conf}
-
 \section{Creating a New User Portal}
+
+
 
 \subsection{Adding Logging}
 

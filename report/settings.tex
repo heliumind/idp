@@ -87,13 +87,10 @@
   \lsteveryline{\textcolor{gray}{\$ }}%
 }{}
 
-\lstnewenvironment{code}[1][]{
-  \lstset{
-    numbers=left,
-    numberstyle=\small,
-    tabsize=2,
-    frame=single,
-    captionpos=b,
-    #1
-  }
-}{}
+\lstdefinestyle{sourcecode}{
+  numbers=left,
+  numberstyle=\small,
+  tabsize=2,
+  frame=single,
+  captionpos=b
+}
