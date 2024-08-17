@@ -67,7 +67,8 @@
   autogobble,
   keywordstyle=\bfseries\color{TUMBlue},
   stringstyle=\color{TUMAccentGreen},
-  breaklines=true
+  breaklines=true,
+  postbreak=\mbox{\textcolor{gray}{$\hookrightarrow$}\space}
 }
 
 % Macro \lsteveryline{<tokens>} to prefix tokens to every line
@@ -89,7 +90,8 @@
 
 \lstdefinestyle{sourcecode}{
   numbers=left,
-  numberstyle=\small,
+  basicstyle=\ttfamily\small,
+  numberstyle=\footnotesize,
   tabsize=2,
   frame=single,
   captionpos=b

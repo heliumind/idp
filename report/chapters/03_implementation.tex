@@ -23,7 +23,7 @@ from their personal DSS directory with external researchers who do not have
 direct access to the LRZ. This is achieved through unique access links, similar
 to file-sharing services like Google Drive or Dropbox.
 
-\subsection{Fixing ParaView OSMesa and glibc Isse}
+\subsection{Fixing ParaView OSMesa and glibc Issue}
 
 In February Ubuntu 22.04 LTS upgraded its GNU C Library, commonly known as
 \textit{glibc}, to version 2.35. This broke the existing data visualization
@@ -72,7 +72,7 @@ The following suffices
     cd <directory>
 \end{terminal}
 
-The custom executable \lstinline{pv-session-mapper} written in Rust has to be
+The custom executable \texttt{pv-session-mapper} written in Rust has to be
 compiled locally as \textit{glibc} is dynamically linked. This means at section
 \textbf{pv-session-mapper installieren} follow these instruction instead
 
@@ -82,7 +82,7 @@ compiled locally as \textit{glibc} is dynamically linked. This means at section
         curl https://sh.rustup.rs -sSf | sh
     \end{terminal}
     It will download a script, and start the installation. If everything went
-    well \lstinline{Rust is installed now. Great!} should appear.
+    well \texttt{Rust is installed now. Great!} should appear.
     \item Change into source directory and compile locally
     \begin{terminal}
         cd pv-session-mapper/session_mapper
@@ -101,7 +101,7 @@ Once through the tutorial, these final adjustments on the Apache Server have to
 be made
 
 \begin{enumerate}
-    \item Activate Apache Server module \lstinline{proxy_wstunnel} with 
+    \item Activate Apache Server module \texttt{proxy\_wstunnel} with 
     \begin{terminal}
         sudo a2enmod proxy_wstunnel
     \end{terminal}
@@ -121,14 +121,14 @@ the landing page without possibly breaking the web app. One way to achieve a
 separation is with the help of subdomains. 
 
 In our design, the landing page will be reachable under
-\lstinline{marge.aer.ed.tum.de} whereas the service will be bound to the
-subdomain \lstinline{pvw.marge.aer.ed.tum.de}. This setup also simplifies DNS
-configuration, the system responsible for translating human-readable names to
-actual routable IP-addresses, as only two records are needed. An A-Record for
-linking \lstinline{marge.aer.ed.tum.de} to the CC instance's floating IP-address
-as well as a wildcard DNS record linking \lstinline{*.marge.aer.ed.tum.de} to
-the same IP-address. The wildcard record will match for every subdomain, even
-not yet existing ones, making this setup suitable for future requirements. 
+\texttt{marge.aer.ed.tum.de} whereas the service will be bound to the subdomain
+\texttt{pvw.marge.aer.ed.tum.de}. This setup also simplifies DNS configuration,
+the system responsible for translating human-readable names to actual routable
+IP-addresses, as only two records are needed. An A-Record for linking
+\texttt{marge.aer.ed.tum.de} to the CC instance's floating IP-address as well as
+a wildcard DNS record linking \texttt{*.marge.aer.ed.tum.de} to the same
+IP-address. The wildcard record will match for every subdomain, even not yet
+existing ones, making this setup suitable for future requirements. 
 
 In order to achieve aforementioned behavior, Apache's virtual host feature is
 leveraged, allowing different content to be served over the same Apache server,
@@ -136,27 +136,28 @@ depending on the host name used in the request. ParaViewWeb continues to use its
 existing subdirectory whereas the landing page is served from a new
 subdirectory.
 
-This means the existing \lstinline{paraview-multi-user.conf} is to be moved from
-\lstinline{conf-available} to \lstinline{sites-available}, the usual place where
-virtual configurations are placed, slightly changed to account for the subdomain
-as seen in Listing~\ref{lst:002-pvw} and a new landing page configuration shown
-in Listing~\ref{lst:001-marge} is to be added. Note how Apache resolves which
-virtual host to serve with the help of the configured \lstinline{ServerName}.
+This means the existing \texttt{paraview-multi-user.conf} is to be moved from
+\texttt{conf-available} to \texttt{sites-available} directory, the usual place
+where virtual configurations are placed, slightly changed to account for the
+subdomain as seen in Listing~\ref{lst:002-pvw} and a new landing page
+configuration shown in Listing~\ref{lst:001-marge} is to be added. Note how
+Apache resolves which virtual host to serve with the help of the configured
+\texttt{ServerName}.
 
 The new landing page configuration resembles a standard site configuration and
 is constructed in the following way:
 \begin{itemize}
-    \item Virtual host configurations are enclosed in a \lstinline{<VirtualHost>}
+    \item Virtual host configurations are enclosed in a \texttt{<VirtualHost>}
     directive, meaning that everything nested within only applies to the defined
     VirtualHost.
-    \item In line 2, \lstinline{ServerName} specifies under which name the
+    \item In line 2, \texttt{ServerName} specifies under which name the
     landing page is accessible.
-    \item \lstinline {DocumentRoot} in line 5 specifies which directory serves
+    \item \texttt {DocumentRoot} in line 5 specifies which directory serves
     the landing page's content.
-    \item \lstinline{ErrorLog} and \lstinline{CustomLog} define in which
+    \item \texttt{ErrorLog} and \texttt{CustomLog} define in which
     location the virtual host's error and access logs are saved.
-    \lstinline{APACHE_LOG_DIR} is a provided variable and resolves to the
-    standard location \lstinline{/var/log/apache2}.
+    \texttt{APACHE\_LOG\_DIR} is a provided variable and resolves to the
+    standard location \texttt{/var/log/apache2}.
     \item Lines 10-14 allow the Apache server to access the files provided in
     line 5.
 \end{itemize}
@@ -165,26 +166,26 @@ is constructed in the following way:
     style=sourcecode,
     float=htp,
     label={lst:001-marge},
-    caption={\lstinline|001-marge.conf|: Apache configuration for Landing Page}
+    caption={\texttt{001-marge.conf}: Apache configuration for Landing Page}
 ]{../apache-config/sites-available/001-marge.conf}
 
 The changes made to ParaViewWeb's Apache configuration are minor and consist of
-enclosing the configuration in a \lstinline{<VirtualHost>} directive,  in line 2
-and specifying an own subdirectory \lstinline{/var/log/apache2/pvw} for storing
-the web app's Apache logs in line 12-13 to separate concerns.
+enclosing the configuration in a \texttt{<VirtualHost>} directive,  in line 2
+and specifying an own subdirectory \texttt{/var/log/apache2/pvw} for storing the
+web app's Apache logs in line 12-13 to separate concerns.
 
 \lstinputlisting[
     style=sourcecode,
     float=htp,
     label={lst:002-pvw},
-    caption={\lstinline{002-pvw.conf}: Apache configuration for ParaViewWeb}
+    caption={\texttt{002-pvw.conf}: Apache configuration for ParaViewWeb}
 ]{../apache-config/sites-available/002-pvw.conf}
 
 \subsubsection*{Instructions}
 
 \begin{enumerate}
     \item Create a folder to serve files for landing page
-    \lstinline{marge.aer.ed.tum.de}
+    \texttt{marge.aer.ed.tum.de}
     \begin{terminal}
         sudo mkdir /var/www/html/marge
     \end{terminal}
@@ -192,8 +193,8 @@ the web app's Apache logs in line 12-13 to separate concerns.
     \begin{terminal}
         sudo mkdir /var/log/apache2/pvw
     \end{terminal}
-    \item Adjust \lstinline{pv-configurator} settings to reflect ParaViewWeb
-    subdomain. Open and edit \lstinline{configurator_settings.json} with root
+    \item Adjust \texttt{pv-configurator} settings to reflect ParaViewWeb
+    subdomain. Open and edit \texttt{configurator\_settings.json} with root
     privileges
     \begin{terminal}
         sudo vim /srv/pv-configurator/configurator_settings.json
@@ -216,7 +217,7 @@ the web app's Apache logs in line 12-13 to separate concerns.
     \begin{terminal}
         sudo a2disconf paraview-multi-project
     \end{terminal}
-    At this point \lstinline{paraview-multi-project.conf} could be deleted as it
+    At this point \texttt{paraview-multi-project.conf} could be deleted as it
     is no longer used.
     \item Finally activate new configuration and restart Apache server
     \begin{terminal}
@@ -228,9 +229,107 @@ the web app's Apache logs in line 12-13 to separate concerns.
 
 \section{Creating a New User Portal}
 
+\lstinputlisting[
+    language=html,
+    style=sourcecode,
+    linerange={1-2,24-48},
+    float=htp,
+    label={lst:htmlform},
+    caption={\texttt{index.html}: New User Form}
+]{../newuser/index.html}
 
+The \texttt{<style>} block in \texttt{index.html} seen in
+Listing~\ref{lst:formstyle} contains CSS rules for showing and hiding the input
+fields for \textit{LRZ username} and \textit{uid on DSS} conditionally based on
+the state of the checkbox. The rules are defined for classes \textit{control}
+and \textit{conditional} and are applied respectively by assigning UI elements
+with the corresponding class and works as follows:
+
+\begin{itemize}
+    \item First block specifies when class \texttt{.control} is checked then the
+    \texttt{.conditional} elements that follow them in the DOM are styled to be
+    visible with properties from line 3-8. 
+    \item Second block specifies when class \textit{.control} is not checked
+    then the \textit{.conditional} elements are styled to be hidden with
+    properties from line 12-19. These properties effectively hide the
+    \texttt{.conditional} elements from view while maintaining a minimal
+    footprint in the
+    layout.
+\end{itemize}
+
+\lstinputlisting[
+    language=html,
+    style=sourcecode,
+    linerange={3-23},
+    float=htp,
+    label={lst:formstyle},
+    caption={\texttt{index.html}: New User Portal Stylesheet}
+]{../newuser/index.html}
+
+% \lstinputlisting[
+%     language=php,
+%     style=sourcecode,
+%     % linerange={3-23},
+%     float=htp,
+%     label={lst:formphp},
+%     caption={\texttt{create\_user.php}: Server-Side Script handling form submission}
+% ]{../newuser/create_user.php}
+
+% \lstinputlisting[
+%     language=bash,
+%     style=sourcecode,
+%     linerange={1-2, 45-79},
+%     float=htp,
+%     label={lst:bootstrap},
+%     caption={\texttt{bootstrap\_user.sh}: Create New User Shell Script}
+% ]{../newuser/bootstrap_user.sh}
 
 \subsection{Adding Logging}
 
-\section{Installing and Configuring Shibboleth SP}\label{section:shibboleth}
+\subsubsection*{Instructions}
 
+\begin{enumerate}
+    \item Install php 
+    \begin{terminal}
+        sudo apt install php libapache2-mod-php
+    \end{terminal}
+    \item Create target directory to serve New User Portal
+    \begin{terminal}
+        sudo mkdir /var/www/html/marge/newuser
+    \end{terminal}
+    \item Change into the repository's newuser directory and copy HTML form to
+    collect the new user's information, server-side script into target directory
+    \begin{terminal}
+        cd newuser
+        sudo cp index.html /var/www/html/marge/newuser
+        sudo cp create_user.php /var/www/html/marge/newuser
+        sudo cp bootstrap_user.sh /var/www/html/marge/newuser
+    \end{terminal}
+    \item Modify file ownerships and make bootstrap user shell script executable
+    \begin{terminal}
+        sudo chown root:root /var/www/html/marge/newuser/*
+        sudo chmod +x /var/www/html/marge/newuser/bootstrap_user.sh
+    \end{terminal}
+    \item Create new entry to sudoers configuration by editing the file
+    \begin{terminal}
+        sudo visudo /etc/sudoers.d/bootstrap_user
+    \end{terminal}
+    \textbf{Only ever make changes with visudo, otherwise sudo can no longer be
+    used in case of a syntax error.} Visudo warns if an attempt is made to save
+    an incorrect file.
+    \item Insert following single line and save the configuration file
+    \begin{lstlisting}[frame={l}]
+        apache-proxy ALL=(ALL) NOPASSWD: /var/www/html/marge/newuser/bootstrap_user.sh
+    \end{lstlisting}
+    This allows Apache's runtime user \texttt{apache-proxy} to execute the
+    bootstrap user shell with sudo privileges.
+    \item Finally restart Apache server
+    \begin{terminal}
+        sudo systemctl restart apache2
+    \end{terminal}
+\end{enumerate}
+
+At this point the New User Portal can be accessed at
+\texttt{marge.aer.ed.tum.de/newuser}.
+
+\section{Installing and Configuring Shibboleth SP}\label{section:shibboleth}
