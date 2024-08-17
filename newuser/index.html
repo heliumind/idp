@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<style>
+.control:checked ~ .conditional {
+    clip: auto;
+    height: auto;
+    margin: 0;
+    overflow: visible;
+    position: static;
+    width: auto;
+}
+
+.control:not(:checked) ~ .conditional {
+    border: 0;
+    clip: rect(0 0 0 0);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    width: 1px;
+}
+</style>
+<body>
+  <h2>Create New MARGE User</h2>
+  <form action="create_user.php" method="POST">
+    <label for="fname">First Name:</label><br>
+    <input type="text" id="fname" name="fname"><br><br>
+    <label for="lname">Last Name:</label><br>
+    <input type="text" id="lname" name="lname"><br><br>
+    <label for="email">Email:</label><br>
+    <input type="email" id="email" name="email"><br><br>
+    <label for="password">Password:</label><br>
+    <input type="password" id="password" name="password"><br><br>
+
+    <input type="checkbox" id="requirement" class="control">
+    <label for="requirement">Do you want to share data on DSS?</label><br><br>
+    <fieldset class="conditional">
+        <label for="lrzuser">LRZ username:</label><br>
+        <input type="text" id="lrzuser" name="lrzuser"><br><br>
+        <label for="uid">uid on DSS:</label><br>
+        <input type="number" id="uid" name="uid" min="1000" max="59999"><br><br>
+    </fieldset>
+
+    <input type="submit" value="Create User">
+  </form>
+</body>
+</html>
