@@ -200,7 +200,7 @@ web app's Apache logs in line 12-13 to separate concerns.
         sudo vim /srv/pv-configurator/configurator_settings.json
     \end{terminal}
     \item Make following change and save file
-    \begin{lstlisting}[frame=single]
+    \begin{lstlisting}[basicstyle=\ttfamily\small, frame=single]
         {
             "servername": "pvw.marge.aer.ed.tum.de",
             ...
@@ -229,6 +229,38 @@ web app's Apache logs in line 12-13 to separate concerns.
 
 \section{Creating a New User Portal}
 
+The existing data visualization service allows users without LRZ credentials to
+access shared projects via a unique access link. We want to extend the sharing
+functionality to the same target group of non LRZ users. Additionally, new user
+creation currently requires human involvement in processing such a request in
+authenticating and creating a new Linux user on the CC instance. The goal is to
+automize user management with the help of a self-service new user portal that
+any authenticated user by the DFN-AAI can access. 
+
+Our solution proposition consists of a form which is protected by DFN-AAI login,
+collects necessary data and upon submission runs a server side script in the
+background to create a new Linux user. Data collected include the new user's
+first name, last name from which a username is generated as well as a desired
+password for the new linux account. Further depending on whether the new user
+has data on DSS to share, lrz username (which will be the linux username instead
+of the generated) and \textit{userid} on DSS are collected. The script shall add
+the user to necessary groups to allow ParaView sharing usage and set correct
+\textit{userid} for DSS folder access. DSS connection has to still be done by
+hand as detailed in appendix D (Anleitung: DSS-Verzeichnis mittels bindfs mit
+anderen Nutzern auf der Compute-Cloud-Instanz teilen) of~\cite{nowak2024pvw}.
+
+We realized the form with the help of a HTML form, which upon submission runs a
+PHP script validating input and finally executes with sudo privileges a bash
+script creating the actual linux user. PHP has been chosen as it is well
+integrated with Apache, making it a common choice for web-based applications on
+Linux servers. Security is of concern as this setup allows users to execute
+privileged commands on the underlying linux server. This risk will be mitigated
+by thoroughly sanitizing and validating user input in the server-side PHP
+script. In addition proper access control and logging are set in place, as
+further described in section~\ref{section:logging}.
+
+\subsection{HTML form}
+
 \lstinputlisting[
     language=html,
     style=sourcecode,
@@ -236,6 +268,42 @@ web app's Apache logs in line 12-13 to separate concerns.
     float=htp,
     label={lst:htmlform},
     caption={\texttt{index.html}: New User Form}
+]{../newuser/index.html}
+
+Listing~\ref{lst:htmlform} depicts the form collecting user information needed
+for linux account creation and is built the following way:
+
+\begin{itemize}
+    \item The \texttt{<form>} definition in line 5 ensures that from data will
+    be sent using a \textit{POST} method and points to \texttt{create\_user.php}
+    script on the server handling user creation.
+    \item Line 6-13 define basic form fields for first name, last name, email
+    and password. Each consists of a \texttt{label} and \texttt{input} for text,
+    email and password fields respectively. The \texttt{for} attribute in the
+    label is associated with the \texttt{id} of the input field to ensure
+    accessibility. The \textit{name} attribute in the input field identifies
+    this field with its value in the form data sent to the server. Email and
+    password input types come with built-in email validation and hides entered
+    characters are hidden from view.
+    \item Line 15-16 is a checkbox input for users to indicate whether they want
+    to share data on DSS and used to conditionally show the second set of
+    fields and is further explained below.
+    \item Second set of fields from line 17-22 wrapped in a \texttt{<fieldset>}
+    tag are for inputting \textit{LRZ username} and \textit{uid on DSS} and also
+    consist of an \texttt{label} and \texttt{input} tag. The \textit{uid} input
+    is restricted to numbers between 1000 and 59999, the range uids are
+    typically reserved for users in Linux distributions.
+    \item Finally line 24 is a submit button that sends the form data to the
+    server when clicked.
+\end{itemize}
+
+\lstinputlisting[
+    language=html,
+    style=sourcecode,
+    linerange={3-23},
+    float=ht,
+    label={lst:formstyle},
+    caption={\texttt{index.html}: New User Portal Stylesheet}
 ]{../newuser/index.html}
 
 The \texttt{<style>} block in \texttt{index.html} seen in
@@ -257,23 +325,27 @@ with the corresponding class and works as follows:
     layout.
 \end{itemize}
 
-\lstinputlisting[
-    language=html,
-    style=sourcecode,
-    linerange={3-23},
-    float=htp,
-    label={lst:formstyle},
-    caption={\texttt{index.html}: New User Portal Stylesheet}
-]{../newuser/index.html}
+\subsection{Create User PHP Script}
 
-% \lstinputlisting[
-%     language=php,
-%     style=sourcecode,
-%     % linerange={3-23},
-%     float=htp,
-%     label={lst:formphp},
-%     caption={\texttt{create\_user.php}: Server-Side Script handling form submission}
-% ]{../newuser/create_user.php}
+\lstinputlisting[
+    language=php,
+    style=sourcecode,
+    linerange={1-1, 9-43},
+    float=htp,
+    label={lst:phpvalidate},
+    caption={\texttt{create\_user.php}: Server-Side Script Validating User Input}
+]{../newuser/create_user.php}
+
+\lstinputlisting[
+    language=php,
+    style=sourcecode,
+    linerange={45-55, 58-59, 61-64},
+    float=ht,
+    label={lst:phpexecute},
+    caption={\texttt{create\_user.php}: Server-Side Script Executing Shell Script}
+]{../newuser/create_user.php}
+
+\subsection{Bootstrap User Shell Script}
 
 % \lstinputlisting[
 %     language=bash,
@@ -284,7 +356,7 @@ with the corresponding class and works as follows:
 %     caption={\texttt{bootstrap\_user.sh}: Create New User Shell Script}
 % ]{../newuser/bootstrap_user.sh}
 
-\subsection{Adding Logging}
+\subsection{Adding Logging}\label{section:logging}
 
 \subsubsection*{Instructions}
 
@@ -296,6 +368,13 @@ with the corresponding class and works as follows:
     \item Create target directory to serve New User Portal
     \begin{terminal}
         sudo mkdir /var/www/html/marge/newuser
+    \end{terminal}
+    \item Create log file and modify file permissions
+    \begin{terminal}
+        sudo mkdir /var/log/newuser
+        sudo touch /var/log/newuser/create_user_php.log
+        sudo chown apache-proxy:apache-proxy /var/log/newuser/create_user_php.log
+        sudo chmod 640 /var/log/newuser/create_user_php.log
     \end{terminal}
     \item Change into the repository's newuser directory and copy HTML form to
     collect the new user's information, server-side script into target directory
@@ -333,3 +412,5 @@ At this point the New User Portal can be accessed at
 \texttt{marge.aer.ed.tum.de/newuser}.
 
 \section{Installing and Configuring Shibboleth SP}\label{section:shibboleth}
+
+\subsection{Password Protecting New User Portal}
