@@ -12,31 +12,23 @@ usage() {
   exit 1
 }
 
-# Function to generate the username
 generate_username() {
   local fname="$1"
   local lname="$2"
   
-  # Create the initial username (first initial + last name)
   first_initial=$(echo "$fname" | cut -c1)
   local username="${first_initial}${lname}"
   
-  # Convert username to lowercase
   username=$(echo "$username" | tr '[:upper:]' '[:lower:]')
   
-  # Initialize the counter
   local count=0
 
-  # Check if the username already exists
   while id "$username" >/dev/null 2>&1; do
-    # Increment the counter and format it as two digits
     count=$((count + 1))
     local suffix=$(printf "%02d" "$count")
     
-    # Append the counter to the username
     username="${first_initial}${lname}${suffix}"
     
-    # Convert username to lowercase
     username=$(echo "$username" | tr '[:upper:]' '[:lower:]')
   done
 
@@ -70,9 +62,7 @@ else
 fi
 
 if [ "$?" -eq 0 ]; then
-  echo "Successfully"
-  echo "Username: $username"
-  echo "Password: $password"
+  echo "Successfully created username: $username"
 else
   echo "Failed"
   userdel -f "$username"

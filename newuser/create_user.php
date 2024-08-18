@@ -1,7 +1,12 @@
 <?php
-// Check if form is submitted
+$logfile = '/var/log/newuser/create_user_php.log';
+
+function log_message($message, $logfile) {
+    $timestamp = date('Y-m-d H:i:s');
+    file_put_contents($logfile, "$timestamp - $message\n", FILE_APPEND);
+}
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Collect and sanitize the input
     $fname = escapeshellcmd($_POST['fname']);
     $lname = escapeshellcmd($_POST['lname']);
     $email = escapeshellcmd($_POST['email']);
@@ -9,13 +14,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $lrzuser = escapeshellcmd($_POST['lrzuser']);
     $uid = escapeshellcmd($_POST['uid']);
 
-    // Validate input
     if (empty($fname) || empty($lname) || empty($password)) {
         echo "First Name, Last Name and Password cannot be empty!";
         exit;
     }
 
-    // Validate names (basic check for allowed characters)
     if (!preg_match('/^([a-zA-Z]{3,30}\s*)+$/', $fname)) {
         echo "Invalid First Name.";
         exit;
@@ -31,7 +34,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         exit;
     }
 
-    // Check if the user already exists
     if (!empty($lrzuser)) {
         $output = shell_exec("id -u " . escapeshellarg($lrzuser));
         if (!empty($output)) {
@@ -40,31 +42,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
     }   
 
-    // Prepare command arguments to create the user
     if (empty($lrzuser) && empty($uid)) {
         $args = "-f " . escapeshellarg($fname) .
-                " -l " . escapeshellarg($lname) . 
-                " -p " . escapeshellarg($password);
+                " -l " . escapeshellarg($lname);
     } else {
         $args = "-f " . escapeshellarg($fname) .
                 " -l " . escapeshellarg($lname) . 
-                " -p " . escapeshellarg($password) .
                 " -u " . escapeshellarg($lrzuser) .
                 " -U " . escapeshellarg($uid);
     }
   
-    // Build the command
     $command = "sudo ./bootstrap_user.sh $args";
+    log_message("Executing command: $command", $logfile);
+    
+    $command = $command . " -p " . escapeshellarg($password);
+    $output = shell_exec($command . ' 2>&1'); 
+    log_message("Command output: $output", $logfile);
 
-    // Execute the command
-    $output = shell_exec($command);
-
-    // Check if the user was created
     echo "$output";
-    // if (empty($output)) {
-    //     echo "User $username created successfully!";
-    // } else {
-    //     echo "Error creating user!";
-    // }
 }
 ?>
