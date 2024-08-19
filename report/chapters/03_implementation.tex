@@ -254,10 +254,10 @@ PHP script validating input and finally executes with sudo privileges a bash
 script creating the actual linux user. PHP has been chosen as it is well
 integrated with Apache, making it a common choice for web-based applications on
 Linux servers. Security is of concern as this setup allows users to execute
-privileged commands on the underlying linux server. This risk will be mitigated
-by thoroughly sanitizing and validating user input in the server-side PHP
-script. In addition proper access control and logging are set in place, as
-further described in section~\ref{section:logging}.
+privileged commands on the underlying linux server, risking potential injection
+attacks. This risk will be mitigated by thoroughly sanitizing and validating
+user input in the server-side PHP script. In addition proper access control and
+logging are set in place, as further described in section~\ref{section:logging}.
 
 \subsection{HTML form}
 
@@ -327,6 +327,18 @@ with the corresponding class and works as follows:
 
 \subsection{Create User PHP Script}
 
+The Server-Side PHP Script handling form submission capabilities are two-folds:
+Sanitization as well as validating user input and executing create user shell
+script with cleaned user input. The realized PHP script is split up in
+Listing~\ref{lst:phpvalidate} and Listing~\ref{lst:phpexecute} accordingly.
+
+Sanitization involves cleaning the input to remove or neutralize potentially
+harmful characters. We need to ensure that the input does not contain characters
+that could be used for command injection. Validation ensures that the input
+adheres to expected formats and constraints. This step makes sure that the data
+is not only sanitized but also logically correct. Listing~\ref{lst:phpvalidate}
+works the following way:
+
 \lstinputlisting[
     language=php,
     style=sourcecode,
@@ -336,25 +348,163 @@ with the corresponding class and works as follows:
     caption={\texttt{create\_user.php}: Server-Side Script Validating User Input}
 ]{../newuser/create_user.php}
 
+\begin{itemize}
+    \item \texttt{if} statement in line 2 checks if the form was submitted using
+    the \textit{POST} method, ensuring that the script only processes form data
+    when the form is submitted correctly.
+    \item Lines 3-8 retrieve form data and assign them to variables for further
+    usage and sanitize them using \texttt{escapeshellcmd}. This is a built-in
+    PHP function making sure that special characters are escaped, making it safe
+    to use these values in shell commands.
+    \item \texttt{if} clause from line 10-13 checks if any of the required
+    fields \textit{fname, lname, password} are empty. If any are missing an
+    error message is displayed and the script exits.
+    \item Line 15-19 use a regular expression to validate that the first name
+    consists of 3 to 30 alphabetic characters, possibly followed by spaces.
+    Again in case of a mismatch appropriate error message is displayed and the
+    script exists.
+    \item Line 20-23 is the same code as described above but validates the last
+    name.
+    \item Line 25-28 validates in case of a non empty \textit{lrzuser} field
+    that it adheres lrz username pattern (e.g., ab12xyz).
+    \item If a username is provided as is the case when a user has data on DSS
+    to share, line 30-35 check if the user already exists on the CC instance to
+    avoid duplication. This is done by running the shell command \texttt{id -u}
+    with the provided username as an argument enclosed in
+    \texttt{escapeshellarg} and saving its return value in the \texttt{output}
+    variable. \texttt{escapeshellarg} is a built-in PHP function escaping a
+    string to be used as a single argument to a shell command. If the user
+    already exists the \textit{id} command returns a non-empty value and an
+    error message is shown.
+\end{itemize}
+
 \lstinputlisting[
     language=php,
     style=sourcecode,
     linerange={45-55, 58-59, 61-64},
-    float=ht,
+    float=htp,
     label={lst:phpexecute},
     caption={\texttt{create\_user.php}: Server-Side Script Executing Shell Script}
 ]{../newuser/create_user.php}
 
+Listing~\ref{lst:phpexecute} prepares the commands to the final shell script
+before it is executed:
+
+\begin{itemize}
+    \item Depending on whether \textit{lrzuser} and \textit{uid} are provided,
+    line 1-9 construct the appropriate arguments for the shell command and saves
+    it in the \texttt{args} variable. Arguments are constructed by concatenating
+    first name, last name and optionally lrzuser or uid with their corresponding
+    flags, e.g. \texttt{-f} for fname, and running them again through
+    \texttt{escapeshellarg}.
+    \item In line 11-12 the final command is built by specifying the shell
+    script \textit{bootstrap\_user.sh} and to execute it with \textit{sudo}. The
+    required password argument is only appended to the command later for logging
+    reasons as described in section~\ref{section:logging}
+    \item Line 13 runs the command built using \texttt{shell\_exec} while
+    capturing \textit{stdout} and \textit{stderror} and echoing any possible
+    output back to the user in line 15.
+\end{itemize}
+
 \subsection{Bootstrap User Shell Script}
 
-% \lstinputlisting[
-%     language=bash,
-%     style=sourcecode,
-%     linerange={1-2, 45-79},
-%     float=htp,
-%     label={lst:bootstrap},
-%     caption={\texttt{bootstrap\_user.sh}: Create New User Shell Script}
-% ]{../newuser/bootstrap_user.sh}
+The bootstrap user shell script starts with the usage function seen in
+listing~\ref{lst:bootstrapusage} as it's a UNIX and Linux convention to include
+such in scripts and is printed if wrong arguments are provided.
+
+\lstinputlisting[
+    language=bash,
+    style=sourcecode,
+    linerange={3-13},
+    float=htp,
+    label={lst:bootstrapusage},
+    caption={\texttt{bootstrap\_user.sh}: usage function}
+]{../newuser/bootstrap_user.sh}
+
+\lstinputlisting[
+    language=bash,
+    style=sourcecode,
+    linerange={15-36},
+    float=ht,
+    label={lst:bootstrapgenerate},
+    caption={\texttt{bootstrap\_user.sh}: generate\_username function}
+]{../newuser/bootstrap_user.sh}
+
+Listing~\ref{lst:bootstrapgenerate} shows a helper function to obtain a unique
+username from provided first and last name and works the following way:
+
+\begin{itemize}
+    \item First the arguments are saved in local variables \texttt{fname} and
+    \texttt{lname} in line 1-2. An initial username is created by taking the
+    first initial of the first name in line 5 and concatenating it with the last
+    name in line 6. In line 8 the initial username is then converted to
+    lowercase.
+    \item In line 10-19 the loop checks if the initial username already exists
+    using the \texttt{id} command. If it exists, a two decimal number (01, 02,
+    etc.) is appended to the username until a unique one is found. By that
+    moment the loop is exited and the found username is returned in line 21.
+\end{itemize}
+
+\lstinputlisting[
+    language=bash,
+    style=sourcecode,
+    linerange={1-2, 37-69},
+    float=htp,
+    label={lst:bootstrap},
+    caption={\texttt{bootstrap\_user.sh}: Create New User Shell Script}
+]{../newuser/bootstrap_user.sh}
+
+The actual shell script in listing~\ref{lst:bootstrap} puts the two pieces
+together:
+
+\begin{itemize}
+    \item From line 3-14 the script processes the command options by iterating
+    through the arguments using a while loop. In Bash, arguments are
+    automatically parsed by splitting by spaces and made available through the
+    variable \texttt{\$1} for the first value, \texttt{\$2} for the second and
+    so on. The condition in the loop checks if the number of remaining arguments
+    is greater than zero. The \texttt{case} statement in line 4 executes either
+    line 5 to 11 depending on the value of \texttt{\$1}, which is the current
+    argument. Each argument is handled by matching the expected flag e.g.
+    \texttt{-f} or \texttt{--fname}, assigning the following value \texttt{\$2}
+    in a variable and finally using \texttt{shift} to move the argument pointer
+    to the next argument, effectively skipping the current argument and its
+    value. This allows the while loop to terminate after all arguments have been
+    handled. Line 10 matches the case when the script is run with the help flag
+    and line 11 if the current argument does not match any of the above cases.
+    Both return the \textit{usage} string defined in
+    listing~\ref{lst:bootstrapusage}.
+    \item In line 16-18 he \texttt{-z} test returns true if the variable is
+    empty. If that is the case the \textit{usage} function is called.
+    \item When the user does not need to share data on DSS and hence the
+    \texttt{\$username} variable is empty, we generate a username with the help
+    of the \texttt{generate\_username} function seen in
+    listing~\ref{lst:bootstrapgenerate}.
+    \item The script hashes the password using the \texttt{openssl} command in
+    line 21 as is required for the \texttt{useradd} command and saves it in a
+    variable for later usage.
+    \item In line 23-26 the shell command \texttt{useradd} used to create a new
+    linux user is invoked either with or without the \texttt{\$uid} variable as
+    argument depending on if the variable is empty. Other arguments provided are
+    the username and first/last names which are associated with the created
+    linux user. Further every created user is assigned to the
+    \texttt{pv-publisher} user group to allow immediate ParaViewWeb usage.
+    \item Finally in line 29-34 after attempting to create the user, the script
+    checks the exit status of the useradd command using \textit{\$?}, which
+    stores the exit status of the last command executed. If the command a
+    success message is printed. In case of failure, the outcome is echoed and
+    the user is forcefully deleted with \texttt{userdel}.
+\end{itemize}
+
+As executing the \texttt{useradd} shell command requires superuser privileges,
+we use sudo to allow the \texttt{apache-proxy} user to execute only
+\texttt{bootstrap\_user.sh} as root without needing a password. This is achieved
+by modifying the sudoers configuration with creating a new entry of the form:
+
+\begin{lstlisting}[frame=single]
+    apache-proxy ALL=(ALL) NOPASSWD: /var/www/html/marge/newuser/bootstrap_user.sh
+\end{lstlisting}
+
 
 \subsection{Adding Logging}\label{section:logging}
 
