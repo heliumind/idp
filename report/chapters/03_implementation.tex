@@ -31,7 +31,7 @@ service as the used ParaView Server is incompatible with the upgraded
 \textit{glibc}. The underlying problem is the \textit{OSMesa} binary used by
 ParaView for software rendering and is further described in this GitLab
 Issue~\cite{kitwareOsmesaBinary}. Until this report's submission date there has
-not been a fix for thi issue.
+not been a fix for this issue.
 
 As proposed by the ParaView maintainers in~\cite{paraviewUsingUbuntu}
 workarounds for this bug are
@@ -43,7 +43,7 @@ workarounds for this bug are
 \end{enumerate}
 
 Option 1 requires a CC instance with a graphics card as the \textit{EGL} variant
-uses hardware rendering. However as currently the demand for GPUs is
+uses hardware rendering. However, as currently the demand for GPUs is
 unquestionably high, they are no instances with GPU available. Option 2 is an
 involved task with software projects of considerable size as in the case of
 ParaView, making it also infeasible. Thus, we have decided on option 3 by
@@ -74,7 +74,7 @@ The following suffices
 
 The custom executable \texttt{pv-session-mapper} written in Rust has to be
 compiled locally as \textit{glibc} is dynamically linked. This means at section
-\textbf{pv-session-mapper installieren} follow these instruction instead
+\textbf{pv-session-mapper installieren} follow these instructions instead
 
 \begin{enumerate}
     \item First install Rust and its build system Cargo by using \textit{rustup}
@@ -123,7 +123,7 @@ separation is with the help of subdomains.
 In our design, the landing page will be reachable under
 \texttt{marge.aer.ed.tum.de} whereas the service will be bound to the subdomain
 \texttt{pvw.marge.aer.ed.tum.de}. This setup also simplifies DNS configuration,
-the system responsible for translating human-readable names to actual routable
+the system responsible for translating human-readable names to actual routeable
 IP-addresses, as only two records are needed. An A-Record for linking
 \texttt{marge.aer.ed.tum.de} to the CC instance's floating IP-address as well as
 a wildcard DNS record linking \texttt{*.marge.aer.ed.tum.de} to the same
@@ -181,7 +181,7 @@ web app's Apache logs in line 12-13 to separate concerns.
     caption={\texttt{002-pvw.conf}: Apache configuration for ParaViewWeb}
 ]{../apache-config/sites-available/002-pvw.conf}
 
-\subsubsection*{Instructions}
+\subsubsection*{Instructions for reorganizing Apache HTTP Server configuration}
 
 \begin{enumerate}
     \item Create a folder to serve files for landing page
@@ -206,7 +206,7 @@ web app's Apache logs in line 12-13 to separate concerns.
             ...
         }
     \end{lstlisting}
-    \item Change into configuration directory and copy both into apache
+    \item Change into configuration directory and copy both into Apache
     configuration
     \begin{terminal}
         cd apache-config/sites-available
@@ -219,7 +219,7 @@ web app's Apache logs in line 12-13 to separate concerns.
     \end{terminal}
     At this point \texttt{paraview-multi-project.conf} could be deleted as it
     is no longer used.
-    \item Finally activate new configuration and restart Apache server
+    \item Finally, activate new configuration and restart Apache server
     \begin{terminal}
         sudo a2ensite 001-marge
         sudo a2ensite 002-pvw
@@ -241,22 +241,22 @@ Our solution proposition consists of a form which is protected by DFN-AAI login,
 collects necessary data and upon submission runs a server side script in the
 background to create a new Linux user. Data collected include the new user's
 first name, last name from which a username is generated as well as a desired
-password for the new linux account. Further depending on whether the new user
-has data on DSS to share, lrz username (which will be the linux username instead
+password for the new Linux account. Further, depending on whether the new user
+has data on DSS to share, LRZ username (which will be the Linux username instead
 of the generated) and \textit{userid} on DSS are collected. The script shall add
 the user to necessary groups to allow ParaView sharing usage and set correct
 \textit{userid} for DSS folder access. DSS connection has to still be done by
 hand as detailed in appendix D (Anleitung: DSS-Verzeichnis mittels bindfs mit
 anderen Nutzern auf der Compute-Cloud-Instanz teilen) of~\cite{nowak2024pvw}.
 
-We realized the form with the help of a HTML form, which upon submission runs a
+We realized the form with the help of an HTML form, which upon submission runs a
 PHP script validating input and finally executes with sudo privileges a bash
-script creating the actual linux user. PHP has been chosen as it is well
+script creating the actual Linux user. PHP has been chosen as it is well
 integrated with Apache, making it a common choice for web-based applications on
 Linux servers. Security is of concern as this setup allows users to execute
-privileged commands on the underlying linux server, risking potential injection
+privileged commands on the underlying Linux server, risking potential injection
 attacks. This risk will be mitigated by thoroughly sanitizing and validating
-user input in the server-side PHP script. In addition proper access control and
+user input in the server-side PHP script. In addition, proper access control and
 logging are set in place, as further described in section~\ref{section:logging}.
 
 \subsection{HTML form}
@@ -271,7 +271,7 @@ logging are set in place, as further described in section~\ref{section:logging}.
 ]{../newuser/index.html}
 
 Listing~\ref{lst:htmlform} depicts the form collecting user information needed
-for linux account creation and is built the following way:
+for Linux account creation and is built the following way:
 
 \begin{itemize}
     \item The \texttt{<form>} definition in line 5 ensures that from data will
@@ -290,10 +290,10 @@ for linux account creation and is built the following way:
     fields and is further explained below.
     \item Second set of fields from line 17-22 wrapped in a \texttt{<fieldset>}
     tag are for inputting \textit{LRZ username} and \textit{uid on DSS} and also
-    consist of an \texttt{label} and \texttt{input} tag. The \textit{uid} input
+    consist of a \texttt{label} and \texttt{input} tag. The \textit{uid} input
     is restricted to numbers between 1000 and 59999, the range uids are
     typically reserved for users in Linux distributions.
-    \item Finally line 24 is a submit button that sends the form data to the
+    \item Finally, line 24 is a submit button that sends the form data to the
     server when clicked.
 \end{itemize}
 
@@ -366,7 +366,7 @@ works the following way:
     \item Line 20-23 is the same code as described above but validates the last
     name.
     \item Line 25-28 validates in case of a non empty \textit{lrzuser} field
-    that it adheres lrz username pattern (e.g., ab12xyz).
+    that it adheres to a LRZ username pattern (e.g., ab12xyz).
     \item If a username is provided as is the case when a user has data on DSS
     to share, line 30-35 check if the user already exists on the CC instance to
     avoid duplication. This is done by running the shell command \texttt{id -u}
@@ -487,19 +487,19 @@ together:
     linux user is invoked either with or without the \texttt{\$uid} variable as
     argument depending on if the variable is empty. Other arguments provided are
     the username and first/last names which are associated with the created
-    linux user. Further every created user is assigned to the
+    linux user. Further, every created user is assigned to the
     \texttt{pv-publisher} user group to allow immediate ParaViewWeb usage.
-    \item Finally in line 29-34 after attempting to create the user, the script
-    checks the exit status of the useradd command using \textit{\$?}, which
+    \item Finally, in line 29-34 after attempting to create the user, the script
+    checks the exit status of the useradd command using \texttt{\$?}, which
     stores the exit status of the last command executed. If the command a
     success message is printed. In case of failure, the outcome is echoed and
     the user is forcefully deleted with \texttt{userdel}.
 \end{itemize}
 
 As executing the \texttt{useradd} shell command requires superuser privileges,
-we use sudo to allow the \texttt{apache-proxy} user to execute only
+we use \textit{sudo} to allow the \texttt{apache-proxy} user to execute only
 \texttt{bootstrap\_user.sh} as root without needing a password. This is achieved
-by modifying the sudoers configuration with creating a new entry of the form:
+by modifying the sudoers configuration and creating a new entry of the form:
 
 \begin{lstlisting}[frame=single]
     apache-proxy ALL=(ALL) NOPASSWD: /var/www/html/marge/newuser/bootstrap_user.sh
@@ -508,10 +508,19 @@ by modifying the sudoers configuration with creating a new entry of the form:
 
 \subsection{Adding Logging}\label{section:logging}
 
-\subsubsection*{Instructions}
+\lstinputlisting[
+    language=php,
+    style=sourcecode,
+    linerange={1-7, 55-},
+    float=htp,
+    label={lst:logging},
+    caption={\texttt{create\_user.php}: Server-Side Script Logging}
+]{../newuser/create_user.php}
+
+\subsubsection*{Instructions for creating a New User Portal}
 
 \begin{enumerate}
-    \item Install php 
+    \item Install PHP 
     \begin{terminal}
         sudo apt install php libapache2-mod-php
     \end{terminal}
@@ -534,7 +543,7 @@ by modifying the sudoers configuration with creating a new entry of the form:
         sudo cp create_user.php /var/www/html/marge/newuser
         sudo cp bootstrap_user.sh /var/www/html/marge/newuser
     \end{terminal}
-    \item Modify file ownerships and make bootstrap user shell script executable
+    \item Modify file ownership and make bootstrap user shell script executable
     \begin{terminal}
         sudo chown root:root /var/www/html/marge/newuser/*
         sudo chmod +x /var/www/html/marge/newuser/bootstrap_user.sh
@@ -552,7 +561,7 @@ by modifying the sudoers configuration with creating a new entry of the form:
     \end{lstlisting}
     This allows Apache's runtime user \texttt{apache-proxy} to execute the
     bootstrap user shell with sudo privileges.
-    \item Finally restart Apache server
+    \item Finally, restart Apache server
     \begin{terminal}
         sudo systemctl restart apache2
     \end{terminal}
