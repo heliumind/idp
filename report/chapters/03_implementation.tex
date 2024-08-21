@@ -508,6 +508,30 @@ by modifying the sudoers configuration and creating a new entry of the form:
 
 \subsection{Adding Logging}\label{section:logging}
 
+In order to address security concerns in our New User Portal, we want to put
+logging in place to audit user creation. This approach enforces transparency and
+comprehensiveness in case a security issue happens. In particular, we want to
+detain what exact user input after sanitization is passed as arguments to the
+privileged shell command. Therefore, we modify the Server-Side Create User PHP
+script with logging capabilities and log the exact command executed and its
+output. A log file is created in \texttt{/var/log/newuser} and access to it
+through Apache is ensured by modifying the file ownership and write access to
+the \texttt{apache-proxy} user. Changes are shown in Listing~\ref{lst:logging}:
+
+\begin{itemize}
+    \item Line 2 specifies the log file's path in the variable
+    \texttt{\$logfile}
+    \item \texttt{log\_message} function is defined in line 4-7. It takes a
+    message string and log file path string as arguments and logs the given
+    message with a timestamp to the specified log file. The timestamp has the
+    format year, month, day, hour, minute.
+    \item To avoid logging the new user's password in plain text, we have
+    constructed the variables \texttt{\$args} and \texttt{\$command} without the
+    password, so that the command can be safely logged in line 9.
+    \item Afterwards, the password is appended to the \texttt{\$command}
+    variable, executed and finally its output also logged in line 13.
+\end{itemize}
+
 \lstinputlisting[
     language=php,
     style=sourcecode,
