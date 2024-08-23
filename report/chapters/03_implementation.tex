@@ -1,10 +1,10 @@
 \chapter{Implementation}\label{chapter:implementation}
 
-This chapter contains detailed information on the rationale and how solutions
-are implemented. It also gives instructions on how to install them. It assumes
-the reader has ssh access to the server, sudo privileges, access to the source
-code and has cloned the code repository on the server as detailed in appendix
-\ref{chapter:code}.
+This chapter contains detailed information on the design rationale and how
+solutions are implemented. It also gives instructions on how to install them. It
+assumes the reader has ssh access to the server, sudo privileges, access to the
+source code and has cloned the code repository on the server as described in
+appendix \ref{chapter:code}.
 
 \section{Existing Data Visualization Service}
 
@@ -136,16 +136,16 @@ depending on the host name used in the request. ParaViewWeb continues to use its
 existing subdirectory whereas the landing page is served from a new
 subdirectory.
 
-This means the existing \texttt{paraview-multi-user.conf} is to be moved from
-\texttt{conf-available} to \texttt{sites-available} directory, the usual place
-where virtual configurations are placed, slightly changed to account for the
-subdomain as seen in Listing~\ref{lst:002-pvw} and a new landing page
+This means the existing configuration \texttt{paraview-multi-user.conf} is to be
+moved from \texttt{conf-available} to \texttt{sites-available} directory, the
+usual place where virtual configurations are placed, slightly changed to account
+for the subdomain as seen in Listing~\ref{lst:002-pvw} and a new landing page
 configuration shown in Listing~\ref{lst:001-marge} is to be added. Note how
 Apache resolves which virtual host to serve with the help of the configured
 \texttt{ServerName}.
 
-The new landing page configuration resembles a standard site configuration and
-is constructed in the following way:
+The new landing page configuration (Listing~\ref{lst:001-marge}) resembles a
+standard site configuration and is constructed in the following way:
 \begin{itemize}
     \item Virtual host configurations are enclosed in a \texttt{<VirtualHost>}
     directive, meaning that everything nested within only applies to the defined
@@ -169,10 +169,11 @@ is constructed in the following way:
     caption={\texttt{001-marge.conf}: Apache configuration for Landing Page}
 ]{../apache-config/sites-available/001-marge.conf}
 
-The changes made to ParaViewWeb's Apache configuration are minor and consist of
-enclosing the configuration in a \texttt{<VirtualHost>} directive,  in line 2
-and specifying an own subdirectory \texttt{/var/log/apache2/pvw} for storing the
-web app's Apache logs in line 12-13 to separate concerns.
+The changes made to ParaViewWeb's Apache configuration
+(Listing~\ref{lst:002-pvw}) are minor and consist of enclosing the configuration
+in a \texttt{<VirtualHost>} directive,  in line 2 and specifying an own
+subdirectory \texttt{/var/log/apache2/pvw} for storing the web app's Apache logs
+in line 12-13 to separate concerns.
 
 \lstinputlisting[
     style=sourcecode,
@@ -259,7 +260,7 @@ attacks. This risk will be mitigated by thoroughly sanitizing and validating
 user input in the server-side PHP script. In addition, proper access control and
 logging are set in place, as further described in section~\ref{section:logging}.
 
-\subsection{HTML form}
+\subsection{HTML Form}
 
 \lstinputlisting[
     language=html,
@@ -267,7 +268,7 @@ logging are set in place, as further described in section~\ref{section:logging}.
     linerange={1-2,24-48},
     float=htp,
     label={lst:htmlform},
-    caption={\texttt{index.html}: New User Form}
+    caption={\texttt{index.html}: New user form}
 ]{../newuser/index.html}
 
 Listing~\ref{lst:htmlform} depicts the form collecting user information needed
@@ -303,7 +304,7 @@ for Linux account creation and is built the following way:
     linerange={3-23},
     float=ht,
     label={lst:formstyle},
-    caption={\texttt{index.html}: New User Portal Stylesheet}
+    caption={\texttt{index.html}: New user portal stylesheet}
 ]{../newuser/index.html}
 
 The \texttt{<style>} block in \texttt{index.html} seen in
@@ -325,9 +326,18 @@ with the corresponding class and works as follows:
     layout.
 \end{itemize}
 
+\lstinputlisting[
+    language=php,
+    style=sourcecode,
+    linerange={1-1, 9-43},
+    float=htp,
+    label={lst:phpvalidate},
+    caption={\texttt{create\_user.php}: Server-side script validating user input}
+]{../newuser/create_user.php}
+
 \subsection{Create User PHP Script}
 
-The Server-Side PHP Script handling form submission capabilities are two-folds:
+The server-side PHP script handling form submission capabilities are two-folds:
 Sanitization as well as validating user input and executing create user shell
 script with cleaned user input. The realized PHP script is split up in
 Listing~\ref{lst:phpvalidate} and Listing~\ref{lst:phpexecute} accordingly.
@@ -338,15 +348,6 @@ that could be used for command injection. Validation ensures that the input
 adheres to expected formats and constraints. This step makes sure that the data
 is not only sanitized but also logically correct. Listing~\ref{lst:phpvalidate}
 works the following way:
-
-\lstinputlisting[
-    language=php,
-    style=sourcecode,
-    linerange={1-1, 9-43},
-    float=htp,
-    label={lst:phpvalidate},
-    caption={\texttt{create\_user.php}: Server-Side Script Validating User Input}
-]{../newuser/create_user.php}
 
 \begin{itemize}
     \item \texttt{if} statement in line 2 checks if the form was submitted using
@@ -384,7 +385,7 @@ works the following way:
     linerange={45-55, 58-59, 61-64},
     float=htp,
     label={lst:phpexecute},
-    caption={\texttt{create\_user.php}: Server-Side Script Executing Shell Script}
+    caption={\texttt{create\_user.php}: Server-side script executing shell script}
 ]{../newuser/create_user.php}
 
 Listing~\ref{lst:phpexecute} prepares the commands to the final shell script
@@ -409,7 +410,7 @@ before it is executed:
 \subsection{Bootstrap User Shell Script}
 
 The bootstrap user shell script starts with the usage function seen in
-listing~\ref{lst:bootstrapusage} as it's a UNIX and Linux convention to include
+Listing~\ref{lst:bootstrapusage} as it's a UNIX and Linux convention to include
 such in scripts and is printed if wrong arguments are provided.
 
 \lstinputlisting[
@@ -418,7 +419,7 @@ such in scripts and is printed if wrong arguments are provided.
     linerange={3-13},
     float=htp,
     label={lst:bootstrapusage},
-    caption={\texttt{bootstrap\_user.sh}: usage function}
+    caption={\texttt{bootstrap\_user.sh}: Usage function}
 ]{../newuser/bootstrap_user.sh}
 
 \lstinputlisting[
@@ -427,7 +428,7 @@ such in scripts and is printed if wrong arguments are provided.
     linerange={15-36},
     float=ht,
     label={lst:bootstrapgenerate},
-    caption={\texttt{bootstrap\_user.sh}: generate\_username function}
+    caption={\texttt{bootstrap\_user.sh}: Function generating a unique username}
 ]{../newuser/bootstrap_user.sh}
 
 Listing~\ref{lst:bootstrapgenerate} shows a helper function to obtain a unique
@@ -451,10 +452,10 @@ username from provided first and last name and works the following way:
     linerange={1-2, 37-69},
     float=htp,
     label={lst:bootstrap},
-    caption={\texttt{bootstrap\_user.sh}: Create New User Shell Script}
+    caption={\texttt{bootstrap\_user.sh}: Create new user shell script}
 ]{../newuser/bootstrap_user.sh}
 
-The actual shell script in listing~\ref{lst:bootstrap} puts the two pieces
+The actual shell script in Listing~\ref{lst:bootstrap} puts the two pieces
 together:
 
 \begin{itemize}
@@ -473,13 +474,13 @@ together:
     handled. Line 10 matches the case when the script is run with the help flag
     and line 11 if the current argument does not match any of the above cases.
     Both return the \textit{usage} string defined in
-    listing~\ref{lst:bootstrapusage}.
-    \item In line 16-18 he \texttt{-z} test returns true if the variable is
+    Listing~\ref{lst:bootstrapusage}.
+    \item In line 16-18 the \texttt{-z} test returns true if the variable is
     empty. If that is the case the \textit{usage} function is called.
     \item When the user does not need to share data on DSS and hence the
     \texttt{\$username} variable is empty, we generate a username with the help
     of the \texttt{generate\_username} function seen in
-    listing~\ref{lst:bootstrapgenerate}.
+    Listing~\ref{lst:bootstrapgenerate}.
     \item The script hashes the password using the \texttt{openssl} command in
     line 21 as is required for the \texttt{useradd} command and saves it in a
     variable for later usage.
@@ -508,11 +509,11 @@ by modifying the sudoers configuration and creating a new entry of the form:
 
 \subsection{Adding Logging}\label{section:logging}
 
-In order to address security concerns in our New User Portal, we want to put
+In order to address security concerns in our new user portal, we want to put
 logging in place to audit user creation. This approach enforces transparency and
 comprehensiveness in case a security issue happens. In particular, we want to
 detain what exact user input after sanitization is passed as arguments to the
-privileged shell command. Therefore, we modify the Server-Side Create User PHP
+privileged shell command. Therefore, we modify the server-side create user PHP
 script with logging capabilities and log the exact command executed and its
 output. A log file is created in \texttt{/var/log/newuser} and access to it
 through Apache is ensured by modifying the file ownership and write access to
@@ -538,17 +539,17 @@ the \texttt{apache-proxy} user. Changes are shown in Listing~\ref{lst:logging}:
     linerange={1-7, 55-},
     float=htp,
     label={lst:logging},
-    caption={\texttt{create\_user.php}: Server-Side Script Logging}
+    caption={\texttt{create\_user.php}: Server-side script logging}
 ]{../newuser/create_user.php}
 
-\subsubsection*{Instructions for creating a New User Portal}
+\subsubsection*{Instructions for creating a new user portal}
 
 \begin{enumerate}
     \item Install PHP 
     \begin{terminal}
         sudo apt install php libapache2-mod-php
     \end{terminal}
-    \item Create target directory to serve New User Portal
+    \item Create target directory to serve the new user portal
     \begin{terminal}
         sudo mkdir /var/www/html/marge/newuser
     \end{terminal}
@@ -591,9 +592,191 @@ the \texttt{apache-proxy} user. Changes are shown in Listing~\ref{lst:logging}:
     \end{terminal}
 \end{enumerate}
 
-At this point the New User Portal can be accessed at
+At this point the new user portal can be accessed at
 \texttt{marge.aer.ed.tum.de/newuser}.
 
-\section{Installing and Configuring Shibboleth SP}\label{section:shibboleth}
+\section{Installing and Configuring Shibboleth}\label{section:shibboleth}
 
-\subsection{Password Protecting New User Portal}
+We will be installing both the Shibboleth Service Provider (SP) and the
+Shibboleth Embedded Discovery Service (EDS). Such an SP-side discovery service
+is the method of choice in most cases, especially in scenarios where an SP
+operator wants to modify or restrict the list for IdP selection via certain
+filters. 
+
+The Shibboleth SP needs an X.509 key pair for signing and encrypting SAML
+messages. Secure web servers already have a valid X.509 certificate for
+providing SSL/TLS and one could technically reuse those. However, it is
+recommended to use a dedicated self-signed certificate, independently configured
+from the SSL/TLS certificate used by the web server.
+
+Shibboleth SP's configuration directory is located at \texttt{/etc/shibboleth}.
+The main configuration file is \texttt{shibboleth2.xml}. Each service provider
+needs a unique \textit{entityID} which we chose to be
+\texttt{https://marge.aer.ed.tum.de/shibboleth}.
+
+\subsection{Shibboleth SP}
+
+\begin{itemize}
+    \item Install Shibboleth SP and software requirements
+    \begin{terminal}
+        sudo apt install libapache2-mod-shib ntp openssl
+    \end{terminal}
+    \item Create X.509 certificate for SAML message signing and encrypting
+    \begin{terminal}
+        sudo shib-keygen -f -u _shibd -h marge.aer.ed.tum.de -y 3 -o /etc/shibboleth
+    \end{terminal}
+    \item Add following lines to the Apache configuration file
+    \texttt{001-marge.conf}
+    \begin{lstlisting}[frame={l}]
+        UseCanonicalName On
+        Include /etc/shibboleth-ds/shibboleth-ds.conf
+        Redirect seeother /shibboleth https://marge.aer.ed.tum.de/Shibboleth.sso/Metadata
+        RedirectMatch /start-session$ /Shibboleth.sso/Login
+    \end{lstlisting}
+    \item Activate the Shibboleth module in Apache
+    \begin{terminal}
+        sudo a2enmod shib2
+    \end{terminal}
+    \item After the configuration a quick test shows whether the Service
+    Provider was installed properly.
+    \begin{terminal}
+        sudo shibd -t
+    \end{terminal}
+    If the last line of the output is \texttt{overall configuration is loadable,
+    check console for non-fatal problems}, everything is as expected
+    \item Restart Apache \texttt{sudo systemctl apache2} and then access
+    \url{https://marge.aer.ed.tum.de/Shibboleth.sso/Session}. If the web page
+    shows the message \textit{A valid session was not found}, the Shibboleth
+    module is loaded by the Apache and is communicating with the \texttt{shibd}
+    process.
+    \item At this point metadata for the SP can be found at
+    \url{https://marge.aer.ed.tum.de/Shibboleth.sso/Metadata}
+\end{itemize}
+
+\subsection{Shibboleth EDS}
+
+\begin{enumerate}
+    \item Download and install Shibboleth EDS
+    \begin{terminal}
+        wget https://shibboleth.net/downloads/embedded-discovery-service/1.2.2/shibboleth-embedded-ds-1.2.2.tar.gz
+        tar -xzf shibboleth-embedded-ds-1.2.2.tar.gz
+        cd shibboleth-embedded-ds-1.2.2
+        sudo make install
+    \end{terminal}
+    \item  Configure EDS by modifying the Return White List
+    \begin{terminal}
+        sudo vim /etc/shibboleth-ds/idpselect_config.js
+    \end{terminal}
+    Modify following line in the file to include the virtual host name as a
+    regular expression
+    \begin{lstlisting}[frame={l}]
+        this.returnWhiteList = [ "^https:\/\/marge\.aer\.ed\.tum\.de\/Shibboleth\.sso\/Login.*$" ];
+    \end{lstlisting}
+    \item Configure backup discovery service to DFN WAYF
+    \begin{terminal}
+        sudo vim /etc/shibboleth-ds/index.html
+    \end{terminal}
+\end{enumerate}
+
+\subsection{Access Control with Shibboleth and Apache}
+One of the great advantages of Shibboleth are its capabilities to easily define
+secure access control rules. A resource can be protected with access rules
+defined in the web server configuration, in Shibboleth or by the application
+itself. In all cases a Shibboleth session must be enforced first. This ensures
+that the user's attributes are available and can be used for access control. A
+user is then only granted access if his attributes match the defined access
+control rules. 
+
+Shibboleth allows using Apache directives to protect directories, files or
+locations. Meaning access control rules can be defined in the virtual host's
+Apache configuration files. A very simple access control rule that could be
+defined in the Apache configuration looks like this: 
+
+\begin{lstlisting}[frame=single]
+    <Location /protected-directory>
+        AuthType shibboleth
+        ShibRequestSetting requireSession true
+        Require shib-attr homeOrganizationType university
+    </Location>
+\end{lstlisting}
+
+This will enforce a Shibboleth session, i.e. users have to authenticate first in
+order to access the content of the directory \texttt{protected-directory} and
+all its subdirectories. The three lines between the \texttt{<Location>} tag are
+the Shibboleth access control directives. The \texttt{AuthType} directive
+specifies the authentication method to be used. In this example, the directive
+\texttt{Require shib-attr} enforces that users must be members of a university
+(\texttt{homeOrganizationType university}).
+
+\subsection{Password Protecting the New User Portal}
+
+Until this report's submission date the DNS records for the subdomain have not
+been set up due to a lack of response of the responsible administrator.
+Therefore, we will not be able to test the DFN-AAI login functionality. However,
+we can simulate access control instead by protecting the new user portal. This
+will allow us to test the form and the server-side script without the need for
+DFN-AAI login.
+
+We employ Apache's built-in functionality to password-protect web pages with the
+help of \textit{htaccess} and \textit{htpasswd} files. The \textit{htaccess}
+file is a configuration file placed in the directory that needs to be protected.
+Within this file, directives are set up to manage the behavior of that directory
+and its subdirectories. The directives used are \textit{AuthType},
+\textit{AuthName}, \textit{AuthUserFile}, and \textit{Require}: 
+
+\begin{itemize}
+	\item \textit{AuthType} is set to Basic, specifying the basic authentication
+    method. 
+    \item \textit{AuthName} is a descriptive label that will appear in the
+    login dialog box.
+    \item \textit{AuthUserFile} points to the location of the \textit{htpasswd}
+    file, which contains the usernames and hashed passwords. 
+    \item The \textit{Require} directive ensures that only valid users can
+    access the protected directory by requiring a valid-user condition.
+\end{itemize}
+
+The \textit{htpasswd} file is where user credentials are stored. This file is
+typically generated and managed using command-line tools or scripts, such as the
+\texttt{htpasswd} utility that comes with Apache. Each line in the generated
+\textit{htpasswd} file contains a username and a hashed version of the user's
+password, separated by a colon. The hashing helps to ensure that even if the
+\textit{htpasswd} file is somehow accessed by an unauthorized party, the plain
+text passwords are not readily available.
+
+When a user attempts to access a password-protected page, the browser prompts
+them for a username and password. This input is then sent to the server, where
+Apache verifies the credentials against the information stored in the
+\textit{htpasswd} file. If the credentials match, the user is granted access;
+otherwise, they are denied entry.
+
+\subsubsection*{Instructions for password protecting the new user portal}
+
+\begin{itemize}
+    \item Create an \texttt{.htpasswd} file
+    \begin{terminal}
+        htpasswd -c /etc/apache2/.htpasswd admin
+    \end{terminal}
+    This creates a new file and adds the first user \textit{admin}. You'll be
+    prompted to set a password.
+    \item Create and configure \texttt{.htaccess} in the \texttt{newuser}
+    directory
+    \begin{terminal}
+        sudo vim /var/www/html/marge/newuser/.htacess
+    \end{terminal}
+    Insert following lines to configure the password protection
+    \begin{lstlisting}[frame={l}]
+        AuthType Basic
+        AuthName "Restricted Area"
+        AuthUserFile /etc/apache2/.htpasswd
+        Require valid-user
+    \end{lstlisting}
+    \item Restart Apache Server to load new configuration with
+    \begin{terminal}
+        sudo systemctl restart apache2
+    \end{terminal} 
+
+    When trying to access the new user portal under
+    \texttt{marge.aer.ed.tum.de/newuser} the web browser prompts for a username
+    and password.
+    
+\end{itemize}
