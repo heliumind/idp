@@ -560,8 +560,9 @@ the \texttt{apache-proxy} user. Changes are shown in Listing~\ref{lst:logging}:
         sudo chown apache-proxy:apache-proxy /var/log/newuser/create_user_php.log
         sudo chmod 640 /var/log/newuser/create_user_php.log
     \end{terminal}
-    \item Change into the repository's newuser directory and copy HTML form to
-    collect the new user's information, server-side script into target directory
+    \item Change into the repository's \texttt{newuser} directory and copy HTML
+    form to collect the new user's information, server-side script into target
+    directory
     \begin{terminal}
         cd newuser
         sudo cp index.html /var/www/html/marge/newuser
@@ -612,11 +613,18 @@ from the SSL/TLS certificate used by the web server.
 Shibboleth SP's configuration directory is located at \texttt{/etc/shibboleth}.
 The main configuration file is \texttt{shibboleth2.xml}. Each service provider
 needs a unique \textit{entityID} which we chose to be
-\texttt{https://marge.aer.ed.tum.de/shibboleth}.
+\texttt{https://marge.aer.ed.tum.de/shibboleth}. Currently, we are configuring
+the SP to work with the DFN-AAI test federation. Hence, the metadata provider is
+set accordingly and needs to be changed to the productive version once the
+functionality is tested.
 
-\subsection{Shibboleth SP}
+Apache and Shibboleth are well integrated through the \textit{mod\_shib} module.
+This module handles authentication and authorization using Shibboleth in the
+background by providing configurable Apache directives.
 
-\begin{itemize}
+\subsection{Instructions for Shibboleth SP}
+
+\begin{enumerate}
     \item Install Shibboleth SP and software requirements
     \begin{terminal}
         sudo apt install libapache2-mod-shib ntp openssl
@@ -624,6 +632,16 @@ needs a unique \textit{entityID} which we chose to be
     \item Create X.509 certificate for SAML message signing and encrypting
     \begin{terminal}
         sudo shib-keygen -f -u _shibd -h marge.aer.ed.tum.de -y 3 -o /etc/shibboleth
+    \end{terminal}
+    \item Download the root certificate to the configuration directory
+    \begin{terminal}
+        sudo wget -O /etc/shibboleth/dfn-aai.pem https://www.aai.dfn.de/metadata/dfn-aai.pem
+    \end{terminal}
+    \item Change into the repository's \texttt{shibboleth-config} directory and
+    copy the configuration files to the target directory
+    \begin{terminal}
+        cd shibboleth-config
+        sudo cp shibboleth2.xml /etc/shibboleth
     \end{terminal}
     \item Add following lines to the Apache configuration file
     \texttt{001-marge.conf}
@@ -635,7 +653,7 @@ needs a unique \textit{entityID} which we chose to be
     \end{lstlisting}
     \item Activate the Shibboleth module in Apache
     \begin{terminal}
-        sudo a2enmod shib2
+        sudo a2enmod shib
     \end{terminal}
     \item After the configuration a quick test shows whether the Service
     Provider was installed properly.
@@ -644,16 +662,20 @@ needs a unique \textit{entityID} which we chose to be
     \end{terminal}
     If the last line of the output is \texttt{overall configuration is loadable,
     check console for non-fatal problems}, everything is as expected
-    \item Restart Apache \texttt{sudo systemctl apache2} and then access
-    \url{https://marge.aer.ed.tum.de/Shibboleth.sso/Session}. If the web page
-    shows the message \textit{A valid session was not found}, the Shibboleth
-    module is loaded by the Apache and is communicating with the \texttt{shibd}
-    process.
+    \item Restart Apache and the Shibboleth daemon
+    \begin{terminal}
+	    sudo systemctl apache2 
+        sudo systemctl shibd
+    \end{terminal}
+    Then access \url{https://marge.aer.ed.tum.de/Shibboleth.sso/Session}. If the
+    web page shows the message \textit{A valid session was not found}, the
+    Shibboleth module is loaded by the Apache and is communicating with the
+    \texttt{shibd} process.
     \item At this point metadata for the SP can be found at
     \url{https://marge.aer.ed.tum.de/Shibboleth.sso/Metadata}
-\end{itemize}
+\end{enumerate}
 
-\subsection{Shibboleth EDS}
+\subsection{Instructions for Shibboleth EDS}
 
 \begin{enumerate}
     \item Download and install Shibboleth EDS
