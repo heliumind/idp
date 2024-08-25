@@ -604,24 +604,6 @@ is the method of choice in most cases, especially in scenarios where an SP
 operator wants to modify or restrict the list for IdP selection via certain
 filters. 
 
-The Shibboleth SP needs an X.509 key pair for signing and encrypting SAML
-messages. Secure web servers already have a valid X.509 certificate for
-providing SSL/TLS and one could technically reuse those. However, it is
-recommended to use a dedicated self-signed certificate, independently configured
-from the SSL/TLS certificate used by the web server.
-
-Shibboleth SP's configuration directory is located at \texttt{/etc/shibboleth}.
-The main configuration file is \texttt{shibboleth2.xml}. Each service provider
-needs a unique \textit{entityID} which we chose to be
-\texttt{https://marge.aer.ed.tum.de/shibboleth}. Currently, we are configuring
-the SP to work with the DFN-AAI test federation. Hence, the metadata provider is
-set accordingly and needs to be changed to the productive version once the
-functionality is tested.
-
-Apache and Shibboleth are well integrated through the \textit{mod\_shib} module.
-This module handles authentication and authorization using Shibboleth in the
-background by providing configurable Apache directives.
-
 \subsection{Instructions for Shibboleth SP}
 
 \begin{enumerate}
@@ -629,15 +611,30 @@ background by providing configurable Apache directives.
     \begin{terminal}
         sudo apt install libapache2-mod-shib ntp openssl
     \end{terminal}
-    \item Create X.509 certificate for SAML message signing and encrypting
+    \item The Shibboleth SP needs an X.509 key pair for signing and encrypting
+    SAML messages. Secure web servers already have a valid X.509 certificate for
+    providing SSL/TLS and one could technically reuse those. However, it is
+    recommended to use a dedicated self-signed certificate, independently
+    configured from the SSL/TLS certificate used by the web server.
+    
+    Create X.509 certificate for SAML message signing and encrypting
     \begin{terminal}
         sudo shib-keygen -f -u _shibd -h marge.aer.ed.tum.de -y 3 -o /etc/shibboleth
     \end{terminal}
-    \item Download the root certificate to the configuration directory
+    \item Download DFN AAI's root certificate to the configuration directory
     \begin{terminal}
         sudo wget -O /etc/shibboleth/dfn-aai.pem https://www.aai.dfn.de/metadata/dfn-aai.pem
     \end{terminal}
-    \item Change into the repository's \texttt{shibboleth-config} directory and
+    \item Shibboleth SP's configuration directory is located at
+    \texttt{/etc/shibboleth}. The main configuration file is
+    \texttt{shibboleth2.xml}. Each service provider needs a unique
+    \textit{entityID} which we chose to be
+    \texttt{https://marge.aer.ed.tum.de/shibboleth}. Currently, we are
+    configuring the SP to work with the DFN-AAI test federation. Hence, the
+    metadata provider is set accordingly and needs to be changed to the
+    productive version once the functionality is tested. 
+    
+    Change into the repository's \texttt{shibboleth-config} directory and
     copy the configuration files to the target directory
     \begin{terminal}
         cd shibboleth-config
@@ -651,7 +648,12 @@ background by providing configurable Apache directives.
         Redirect seeother /shibboleth https://marge.aer.ed.tum.de/Shibboleth.sso/Metadata
         RedirectMatch /start-session$ /Shibboleth.sso/Login
     \end{lstlisting}
-    \item Activate the Shibboleth module in Apache
+    \item Apache and Shibboleth are well integrated through the
+    \textit{mod\_shib} module. This module handles authentication and
+    authorization using Shibboleth in the background by providing configurable
+    Apache directives.
+    
+    Activate the Shibboleth module in Apache
     \begin{terminal}
         sudo a2enmod shib
     \end{terminal}
