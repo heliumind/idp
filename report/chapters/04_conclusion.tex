@@ -1,1 +1,39 @@
 \chapter{Conclusion}\label{chapter:conclusion}
+
+In conclusion, in this application project we have developed new features for
+the existing compute cloud infrastructure facilitating data access, storage, and
+sharing of research data. The existing data visualizing service was made more
+accessible to other affiliated researchers by implementing and configuring
+DFN-AAI Shibboleth Login.
+
+As a first step the existing prototype was separated into landing page and the
+actual web application i.e. ParaViewWeb. This separation not only follows the
+best practices in web development but also allows for easier maintenance and
+future development by non-technical staff. Further, we have addressed a yet
+unresolved issue with ParaView concerning incompatible libraries by downgrading
+Ubuntu version to 20.04 LTS.
+
+The primary contribution was integrating Shibboleth into the existing
+infrastructure. This involved configuring Shibboleth SP to handle authentication
+and authorization, and access control with Apache to ensure secure and seamless
+access to protected resources. The SP was configured to work with the DFN-AAI
+test federation, with plans to transition to the productive version upon
+successful testing and correct DNS records set. Key steps included installing
+necessary software components, generating X.509 certificates for SAML message
+signing, and configuring Apache to work with Shibboleth.
+
+Finally, a new user portal was developed in order to automize new user creation
+for our service. This portal consists of a form collecting user information,
+including LRZ username and DSS UID, which are required when a new user wants to
+share data from a DSS container. The form data is securely transmitted to the
+server using the POST method, invoking a server-side script creating a new user,
+while protecting the portal with a required DFN-AAI login.
+
+The next steps include setting DNS records for the subdomains, registering our
+service's metadata with the DFN-AAI federation and changing Shibboleth SP to use
+the productive federation. Future work could focus on further optimizing the
+compute cloud infrastructure, exploring additional security measures, and
+expanding the scope not only to data visualizing but supporting other
+applications including custom code. By continuing to build on the achievements
+of this project, we can ensure that valuable research data remains accessible
+and useful to the scientific community.
