@@ -26,8 +26,9 @@ Finally, a new user portal was developed in order to automize new user creation
 for our service. This portal consists of a form collecting user information,
 including LRZ username and DSS UID, which are required when a new user wants to
 share data from a DSS container. The form data is securely transmitted to the
-server using the POST method, invoking a server-side script creating a new user,
-while protecting the portal with a required DFN-AAI login.
+server using the POST method, invoking a server-side PHP script upon validating
+and sanitizing user input creates a new user with the help of a custom shell
+script, while protecting the portal with a required DFN-AAI login.
 
 The next steps include setting DNS records for the subdomains, registering our
 service's metadata with the DFN-AAI federation and changing Shibboleth SP to use
